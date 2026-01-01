@@ -1,4 +1,4 @@
-// import './App.css';
+import './App.css';
 import Footer from "./MyComponents/Footer";
 import Header from "./MyComponents/Header";
 import Todos from "./MyComponents/Todos";
@@ -53,7 +53,7 @@ function App() {
     }
   }
 
-  // Start editing a todo
+  // editing a todo
   const onEdit = (todo) => {
     setEditTodo(todo);
   }
