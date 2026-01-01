@@ -1,10 +1,10 @@
-import './App.css';
+// import './App.css';
 import Footer from "./MyComponents/Footer";
 import Header from "./MyComponents/Header";
 import Todos from "./MyComponents/Todos";
 import AddTodo from "./MyComponents/AddTodo";
 import About from "./MyComponents/About";
-import React, { useState, useEffect, useEffectEvent } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   BrowserRouter as Router,
   Routes,
@@ -12,59 +12,64 @@ import {
 } from "react-router-dom";
 
 function App() {
-  let initTodo;
-  if (localStorage.getItem("todos") === null) {
-    initTodo = [];
-  }
-  else {
-    initTodo = JSON.parse(localStorage.getItem("todos"));
-  }
-  const onDelete = (todo) => {
-
-    setTodos(todos.filter((e) => {
-      return e !== todo;
-    }));
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }
-
-  const addTodo = (title, desc) => {
-    let sno;
-    if (todos.length == 0) {
-      sno = 0;
-    }
-    else {
-      sno = todos[todos.length - 1].sno + 1;
-    }
-    const myTodo = {
-      sno: sno,
-      title: title,
-      desc: desc,
-    }
-    setTodos([...todos, myTodo]);
-
-  }
-  
+  // Load todos from localStorage on first render
   const [todos, setTodos] = useState(() => {
     const savedTodos = localStorage.getItem("todos");
     return savedTodos ? JSON.parse(savedTodos) : [];
   });
+
+  const [editTodo, setEditTodo] = useState(null); // todo being edited
+
+  // Save todos to localStorage whenever they change
   useEffect(() => {
     localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos])
+  }, [todos]);
 
+  // Delete a todo
+  const onDelete = (todo) => {
+    setTodos(todos.filter((e) => e !== todo));
+  }
 
-return (
+  // Add new todo or update existing todo
+  const addTodo = (title, desc) => {
+    if (editTodo) {
+      // Update existing todo
+      setTodos(todos.map((t) => {
+        if (t.sno === editTodo.sno) {
+          return { ...t, title: title, desc: desc };
+        }
+        return t;
+      }));
+      setEditTodo(null); // reset edit mode
+    } else {
+      // Add new todo
+      let sno = todos.length === 0 ? 0 : todos[todos.length - 1].sno + 1;
+      const myTodo = {
+        sno: sno,
+        title: title,
+        desc: desc
+      }
+      setTodos([...todos, myTodo]);
+    }
+  }
+
+  // Start editing a todo
+  const onEdit = (todo) => {
+    setEditTodo(todo);
+  }
+
+  return (
     <>
       <Router>
         <Header title="My Todos List" searchBar={false} />
 
         <Routes>
           <Route
-             exact path="/"
+            exact path="/"
             element={
               <>
-                <AddTodo addTodo={addTodo} />
-                <Todos todos={todos} onDelete={onDelete} />
+                <AddTodo addTodo={addTodo} editTodo={editTodo} />
+                <Todos todos={todos} onDelete={onDelete} onEdit={onEdit} />
               </>
             }
           />
